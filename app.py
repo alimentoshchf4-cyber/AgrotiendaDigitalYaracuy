@@ -24,7 +24,7 @@ EMPRESA_TELEFONO = "04120582064"
 col_l1, col_l2 = st.columns(2)
 
 # Nombres exactos de los archivos de imagen esperados en el repositorio
-logo_izq = "logo.png"
+logo_izq = "logoshchf4.png"
 logo_der = "logo agrodigitalvenezueladeinitivo.png"
 
 with col_l1:
