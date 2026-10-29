@@ -509,4 +509,46 @@ else: # Administrador
             prod_telf_adm = st.text_input("Teléfono WhatsApp del Productor:")
             prod_nombre_adm = st.text_input("Nombre del Productor / Finca:")
             
-            if st.form_submit_button("Generar
+            if st.form_submit_button("Generar Enlace WhatsApp"):
+                if prod_telf_adm and prod_nombre_adm:
+                    msg_agradecimiento_adm = f"¡Estimado(a) {prod_nombre_adm}! De parte de {EMPRESA_NOMBRE} (AgroDigital Venezuela), le agradecemos la confianza al utilizar nuestra plataforma para potenciar su producción."
+                    url_wa_adm = f"https://wa.me/58{prod_telf_adm[-10:]}?text={urllib.parse.quote(msg_agradecimiento_adm)}"
+                    st.toast("Enlace Generado", icon="📲")
+                    st.markdown(f"[💬 Enviar mensaje vía WhatsApp]({url_wa_adm})", unsafe_allow_html=True)
+                else:
+                    st.error("Complete los datos requeridos.")
+
+    elif menu == "📄 Generador de Notas de Entrega (PDF)":
+        st.header("📄 Generador de Documentación Legal (PDF)")
+        if not st.session_state.transacciones_cerradas:
+            st.info("Sin transacciones cerradas.")
+        else:
+            for t in st.session_state.transacciones_cerradas:
+                st.markdown(f"**Transacción #{t['id_transaccion']}** | {t['productor']} ➔ {t['tienda']} (${t['precio']:.2f} USD)")
+                if st.button(f"📥 Descargar PDF #{t['id_transaccion']}", key=f"pdf_gen_{t['id_transaccion']}"):
+                    class PDF(FPDF):
+                        def header(self):
+                            self.set_font("Arial", "B", 14)
+                            self.cell(0, 10, EMPRESA_NOMBRE, 0, 1, "C")
+                            self.set_font("Arial", "", 10)
+                            self.cell(0, 5, f"RIF: {EMPRESA_RIF}", 0, 1, "C")
+                            self.ln(5)
+
+                    pdf = PDF()
+                    pdf.add_page()
+                    pdf.set_font("Arial", "B", 12)
+                    pdf.cell(0, 10, "NOTA DE ENTREGA Y CERTIFICADO", 0, 1, "C")
+                    pdf.ln(5)
+                    pdf.set_font("Arial", "", 10)
+                    pdf.cell(0, 8, f"Transaccion ID: {t['id_transaccion']}", 0, 1)
+                    pdf.cell(0, 8, f"Zona: {t['zona']}", 0, 1)
+                    pdf.cell(0, 8, f"Productor: {t['productor']}", 0, 1)
+                    pdf.cell(0, 8, f"Agrotienda: {t['tienda']}", 0, 1)
+                    pdf.cell(0, 8, f"Insumo: {t['insumo']} ({t['cantidad']}) - ${t['precio']:.2f} USD", 0, 1)
+                    
+                    filename = f"Nota_Entrega_{t['id_transaccion']}.pdf"
+                    pdf.output(filename)
+                    
+                    with open(filename, "rb") as f_pdf:
+                        st.download_button(label="⬇️ Descargar PDF", data=f_pdf, file_name=filename, mime="application/pdf")
+                st.divider()
