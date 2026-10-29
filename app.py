@@ -19,58 +19,30 @@ EMPRESA_BANCO = "Banco de Venezuela (0102)"
 EMPRESA_TELEFONO = "04120582064"
 
 # ----------------------------------------------------
-# INICIALIZACIÓN DE ESTADOS GLOBALES
-# ----------------------------------------------------
-if "tasa_bcv" not in st.session_state:
-    st.session_state.tasa_bcv = 36.50
-if "pedidos" not in st.session_state:
-    st.session_state.pedidos = []
-if "ofertas" not in st.session_state:
-    st.session_state.ofertas = []
-if "agrotiendas_registradas" not in st.session_state:
-    st.session_state.agrotiendas_registradas = [
-        {"nombre": "Agroinsumos San Felipe C.A.", "estado": "Yaracuy", "municipio": "San Felipe", "telefono": "584121234567"},
-        {"nombre": "Agrotienda El Semillero Barquisimeto", "estado": "Lara", "municipio": "Iribarren", "telefono": "584149876543"},
-        {"nombre": "Distribuidora Agropecuaria Carabobo", "estado": "Carabobo", "municipio": "Valencia", "telefono": "584167654321"}
-    ]
-if "catalogo_productos" not in st.session_state:
-    st.session_state.catalogo_productos = [
-        {"producto": "Urea 46% Granulada (Saco 50kg)", "categoria": "Fertilizantes", "precio_ref": 35.0},
-        {"producto": "NPK 12-24-12 (Saco 50kg)", "categoria": "Fertilizantes", "precio_ref": 42.0},
-        {"producto": "Semilla de Maíz Blanco Certificada", "categoria": "Semillas", "precio_ref": 120.0},
-        {"producto": "Vacuna Fiebre Aftosa (Dosis)", "categoria": "Sanidad Animal", "precio_ref": 2.5}
-    ]
-if "transacciones_cerradas" not in st.session_state:
-    st.session_state.transacciones_cerradas = []
-if "pagos_agrotiendas" not in st.session_state:
-    st.session_state.pagos_agrotiendas = []
-
-if "autenticado" not in st.session_state:
-    st.session_state.autenticado = False
-if "rol_actual" not in st.session_state:
-    st.session_state.rol_actual = None
-if "usuario_actual" not in st.session_state:
-    st.session_state.usuario_actual = ""
-
-# ----------------------------------------------------
-# SECCIÓN CORPORATIVA: ENCABEZADO Y LOGOS
+# SECCIÓN CORPORATIVA: CORRECCIÓN DE DOBLE LOGOTIPO ENCABEZADO
 # ----------------------------------------------------
 col_l1, col_l2 = st.columns(2)
+
+# Nombres exactos de los archivos de imagen esperados en el repositorio
+logo_izq = "logo.png"
+logo_der = "logo agrodigitalvenezueladeinitivo.png"
+
 with col_l1:
-    if path.exists("logo.png"):
-        st.image("logoshchf4.png", width=200)
-    elif path.exists("logoshchf4.png"):
-        st.image("logo agrodigitalvenezueladeinitivo.png", width=200)
+    if path.exists(logo_izq):
+        st.image(logo_izq, width=220)
+    elif path.exists("logo agrodigitalvenezueladefinitivo.png"):
+        # Respaldo por si el nombre tiene variaciones ortográficas
+        st.image("logo agrodigitalvenezueladefinitivo.png", width=220)
     else:
         st.markdown(f"### 🌾 {EMPRESA_NOMBRE}")
+        st.caption(f"_(Falta archivo: {logo_izq})_")
 
 with col_l2:
-    if path.exists("logo agrodigitalvenezueladeinitivo.png"):
-        st.image("logo agrodigitalvenezueladeinitivo.png", width=200)
-    elif path.exists("logo.png"):
-        st.image("logo.png", width=200)
+    if path.exists(logo_der):
+        st.image(logo_der, width=220)
     else:
         st.markdown("### 💻 AgroDigital Venezuela")
+        st.caption(f"_(Falta archivo: {logo_der})_")
 
 st.markdown("<h3 style='text-align: center; color: #1565C0;'>Plataforma Segura con Autenticación y Control de Roles</h3>", unsafe_allow_html=True)
 st.markdown("<h5 style='text-align: center; color: #2E7D32;'>Eje de Operaciones: Yaracuy - Lara - Carabobo</h5>", unsafe_allow_html=True)
