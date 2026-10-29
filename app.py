@@ -59,7 +59,7 @@ col_l1, col_l2 = st.columns(2)
 with col_l1:
     if path.exists("logo.png"):
         st.image("logo.png", width=200)
-    elif path.exists("logo agrodigitalvenezueladeinitivo.png"):
+    elif path.exists("logoshchf4.png"):
         st.image("logo agrodigitalvenezueladeinitivo.png", width=200)
     else:
         st.markdown(f"### 🌾 {EMPRESA_NOMBRE}")
