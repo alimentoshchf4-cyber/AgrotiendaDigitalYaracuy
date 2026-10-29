@@ -58,7 +58,7 @@ if "usuario_actual" not in st.session_state:
 col_l1, col_l2 = st.columns(2)
 with col_l1:
     if path.exists("logo.png"):
-        st.image("logo.png", width=200)
+        st.image("logoshchf4.png", width=200)
     elif path.exists("logoshchf4.png"):
         st.image("logo agrodigitalvenezueladeinitivo.png", width=200)
     else:
