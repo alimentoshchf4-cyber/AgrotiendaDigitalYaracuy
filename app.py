@@ -57,12 +57,12 @@ if "pagos_agrotiendas" not in st.session_state:
 # 3. SECCIÓN CORPORATIVA: DOBLE LOGOTIPO ENCABEZADO
 # ----------------------------------------------------
 col_l1, col_l2 = st.columns(2)
-logo_izq = "logo.png"
+logo_izq = "logoshchf4.png"
 logo_der = "logo agrodigitalvenezueladeinitivo.png"
 
 with col_l1:
-    if path.exists(logo_izq):
-        st.image(logo_izq, width=200)
+    if path.exists("logoshchf4.png"):
+        st.image("logoshchf4.png", width=200)
     elif path.exists("logo agrodigitalvenezueladefinitivo.png"):
         st.image("logo agrodigitalvenezueladefinitivo.png", width=200)
     else:
