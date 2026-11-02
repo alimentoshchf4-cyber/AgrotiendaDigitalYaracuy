@@ -54,10 +54,29 @@ if "pagos_agrotiendas" not in st.session_state:
     st.session_state.pagos_agrotiendas = []
 
 # ----------------------------------------------------
-# 3. ENCABEZADO CORPORATIVO
+# 3. ENCABEZADO CORPORATIVO CON DOBLE LOGOTIPO
 # ----------------------------------------------------
-st.markdown("<h2 style='text-align: center; color: #2E7D32;'>🌾 AgroDigital Venezuela</h2>", unsafe_allow_html=True)
-st.markdown("<h4 style='text-align: center; color: #1565C0;'>Mercado Agrícola Digital (Yaracuy • Lara • Carabobo)</h4>", unsafe_allow_html=True)
+col_logo1, col_titulo, col_logo2 = st.columns([1, 2, 1])
+
+logo_izq = "logoshchf4.png"
+logo_der = "logoagrodigitalvenezueladeinitivo.png"
+
+with col_logo1:
+    if path.exists(logo_izq):
+        st.image(logo_izq, width=180)
+    else:
+        st.warning(f"⚠️ Falta archivo: {logo_izq}")
+
+with col_titulo:
+    st.markdown("<h2 style='text-align: center; color: #2E7D32;'>🌾 AgroDigital Venezuela</h2>", unsafe_allow_html=True)
+    st.markdown("<h4 style='text-align: center; color: #1565C0;'>Mercado Agrícola Digital (Yaracuy • Lara • Carabobo)</h4>", unsafe_allow_html=True)
+
+with col_logo2:
+    if path.exists(logo_der):
+        st.image(logo_der, width=180)
+    else:
+        st.warning(f"⚠️ Falta archivo: {logo_der}")
+
 st.markdown("---")
 
 # ----------------------------------------------------
