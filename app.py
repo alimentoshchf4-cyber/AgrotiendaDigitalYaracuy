@@ -70,7 +70,7 @@ def calcular_precio_con_comision(precio_base):
 col_logo1, col_titulo, col_logo2 = st.columns([1, 2, 1])
 
 logo_izq = "logoshchf4.png"
-logo_der = "logo agrodigitalvenezueladeinitivo.png"
+logo_der = "logoagrodigitalvenezueladeinitivo.png"
 
 with col_logo1:
     if path.exists(logo_izq):
@@ -228,12 +228,13 @@ if st.session_state.rol_actual == "🚜 Productor":
                     if not ofertas_p:
                         st.caption("⏳ Esperando respuestas de las agrotiendas...")
                     else:
-                        for o in ofertas_p:
+                        for idx, o in enumerate(ofertas_p):
                             c1, c2, c3 = st.columns([2, 2, 2])
                             with c1: st.write(f"🏪 **{o['tienda']}**")
                             with c2: st.write(f"💲 **${o['precio']:.2f} USD**")
                             with c3:
-                                if st.button(f"✅ Aceptar Oferta", key=f"adj_{o['pedido_id']}_{o['tienda']}"):
+                                btn_key = f"adj_p{p['id']}_t{o['tienda']}_{idx}"
+                                if st.button(f"✅ Aceptar Oferta", key=btn_key):
                                     st.session_state.transacciones_cerradas.append({
                                         "id_transaccion": len(st.session_state.transacciones_cerradas) + 1,
                                         "productor": p['productor'], "telefono_productor": p['telefono'],
