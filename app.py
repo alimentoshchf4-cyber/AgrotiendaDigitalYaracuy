@@ -38,9 +38,9 @@ if "ofertas" not in st.session_state:
     st.session_state.ofertas = []
 if "agrotiendas_registradas" not in st.session_state:
     st.session_state.agrotiendas_registradas = [
-        {"nombre": "Agroinsumos San Felipe C.A.", "estado": "Yaracuy", "municipio": "San Felipe", "telefono": "584121234567"},
-        {"nombre": "Agrotienda El Semillero Barquisimeto", "estado": "Lara", "municipio": "Iribarren", "telefono": "584149876543"},
-        {"nombre": "Distribuidora Agropecuaria Carabobo", "estado": "Carabobo", "municipio": "Valencia", "telefono": "584167654321"}
+        {"nombre": "Agroinsumos San Felipe C.A.", "rif": "J-12345678-9", "dueno": "Carlos Pacheco", "estado": "Yaracuy", "municipio": "San Felipe", "telefono": "584121234567", "inventario": "Urea, NPK, Herbicidas"},
+        {"nombre": "Agrotienda El Semillero Barquisimeto", "rif": "J-98765432-1", "dueno": "Pedro Pérez", "estado": "Lara", "municipio": "Iribarren", "telefono": "584149876543", "inventario": "Semillas certificadas, Maíz"},
+        {"nombre": "Distribuidora Agropecuaria Carabobo", "rif": "J-45678912-3", "dueno": "Luis Gómez", "estado": "Carabobo", "municipio": "Valencia", "telefono": "584167654321", "inventario": "Vacunas Aftosa, Suplementos"}
     ]
 if "catalogo_productos" not in st.session_state:
     st.session_state.catalogo_productos = [
@@ -127,6 +127,40 @@ if not st.session_state.autenticado:
                     st.rerun()
                 else:
                     st.error("Contraseña de administrador incorrecta.")
+    
+    st.markdown("---")
+    st.markdown("### 📝 ¿Eres una Agrotienda nueva? Afíliate aquí de forma directa:")
+    
+    # Formulario público de Registro y Contrato de Adhesión para Nuevas Agrotiendas
+    with st.form("form_registro_agrotienda_publico"):
+        st.subheader("📜 Contrato de Adhesión de Corretaje Digital - AGROYARACUY")
+        st.markdown("""
+        *En cumplimiento con los artículos 1.133 del Código Civil y la Ley de Mensajes de Datos y Firmas Electrónicas, al registrarse y hacer clic en aceptar, la agrotienda se adhiere de forma libre, consciente y voluntaria a los términos de servicio de la red comercial operada por **COMPAÑÍA HCHF4 C.A. (RIF: J-404509216)**, aceptando el modelo de corretaje digital, la pasarela oficial y la retención del 2% por uso del sistema.*
+        """)
+        
+        reg_nombre = st.text_input("Nombre Comercial de la Agrotienda:")
+        reg_rif = st.text_input("RIF de la Agrotienda (Ej. J-XXXXXXXX-X):")
+        reg_dueno = st.text_input("Nombre del Dueño o Encargado:")
+        reg_tel = st.text_input("WhatsApp / Teléfono de Contacto:")
+        reg_estado = st.selectbox("Estado:", ["Yaracuy", "Lara", "Carabobo"])
+        reg_municipio = st.text_input("Municipio u Localidad (Opcional):", placeholder="Ej. San Felipe, Iribarren...")
+        reg_inventario = st.text_area("Inventario Parcial / Insumos Principales que Oferta:", placeholder="Ej. Fertilizantes, Semillas, Vacunas...")
+        
+        acepta_contrato = st.checkbox("✅ Acepto los Términos, Condiciones y el Contrato de Adhesión Mercantil de AGROYARACUY.")
+        
+        if st.form_submit_button("🚀 Registrar Agrotienda y Aceptar Contrato", use_container_width=True):
+            if reg_nombre and reg_rif and reg_dueno and reg_tel and acepta_contrato:
+                st.session_state.agrotiendas_registradas.append({
+                    "nombre": reg_nombre, "rif": reg_rif, "dueno": reg_dueno,
+                    "estado": reg_estado, "municipio": reg_municipio if reg_municipio else "General",
+                    "telefono": reg_tel, "inventario": reg_inventario
+                })
+                st.success(f"¡Felicitaciones! La agrotienda **{reg_nombre}** ha sido registrada y adherida exitosamente al sistema bajo el RIF {reg_rif}.")
+            elif not acepta_contrato:
+                st.error("Debe aceptar los términos y condiciones del Contrato de Adhesión Mercantil para registrarse.")
+            else:
+                st.error("Por favor complete los campos obligatorios principales.")
+                
     st.stop()
 
 # ----------------------------------------------------
@@ -257,7 +291,7 @@ elif st.session_state.rol_actual == "🏪 Agrotienda":
     pestanas_tienda = st.tabs([
         "🏪 Cotizar Solicitudes", 
         "📦 Mi Inventario", 
-        "📝 Afiliación Mercantil", 
+        "📝 Contrato y Afiliación", 
         "📈 Tendencias",
         "💳 Pasarela de Cobro Multi-canal"
     ])
@@ -286,8 +320,10 @@ elif st.session_state.rol_actual == "🏪 Agrotienda":
         st.dataframe(pd.DataFrame(st.session_state.catalogo_productos), use_container_width=True)
 
     with pestanas_tienda[2]:
-        st.subheader("📝 Contrato de Adhesión Mercantil")
-        st.info("Las operaciones se rigen por las normativas de corretaje digital de la región.")
+        st.subheader("📝 Contrato de Adhesión Mercantil y Registro")
+        st.info("Su agrotienda ya se encuentra adherida bajo las normativas legales de AGROYARACUY y COMPAÑÍA HCHF4 C.A. (RIF: J-404509216).")
+        st.write("Lista de Agrotiendas Registradas en el Sistema:")
+        st.dataframe(pd.DataFrame(st.session_state.agrotiendas_registradas), use_container_width=True)
 
     with pestanas_tienda[3]:
         st.subheader("📈 Tendencias de Precios")
@@ -306,6 +342,7 @@ elif st.session_state.rol_actual == "⚙️ Administrador":
     pestanas_adm = st.tabs([
         "📊 Tasa BCV y Métricas", 
         "📑 Auditoría", 
+        "🏪 Agrotiendas Afiliadas",
         "💸 Liquidación a Tiendas", 
         "📊 Reportes Contables",
         "💬 Agradecimientos",
@@ -325,6 +362,13 @@ elif st.session_state.rol_actual == "⚙️ Administrador":
         st.write(st.session_state.transacciones_cerradas if st.session_state.transacciones_cerradas else "Sin transacciones cerradas.")
 
     with pestanas_adm[2]:
+        st.subheader("🏪 Control de Agrotiendas Registradas por Contrato")
+        if st.session_state.agrotiendas_registradas:
+            st.dataframe(pd.DataFrame(st.session_state.agrotiendas_registradas), use_container_width=True)
+        else:
+            st.info("No hay agrotiendas registradas actualmente.")
+
+    with pestanas_adm[3]:
         st.subheader("💸 Liquidación de Pagos y Aporte del Sistema (2%)")
         if not st.session_state.transacciones_cerradas:
             st.info("No hay transacciones registradas para calcular comisiones.")
@@ -336,7 +380,7 @@ elif st.session_state.rol_actual == "⚙️ Administrador":
                 st.write(f"• Transacción #{t['id_transaccion']} | Aliado: {t['tienda']} | Base: ${des['precio_base']} | **Aporte Sistema (2%):** ${des['aporte_sistema']} | Definitivo: ${des['precio_definitivo']}")
             st.metric("Total Acumulado por Aporte del Sistema (2%)", f"${total_recaudado_sistema:.2f} USD")
 
-    with pestanas_adm[3]:
+    with pestanas_adm[4]:
         st.subheader("📊 Reportes Contables")
         if st.session_state.transacciones_cerradas:
             df_exp = pd.DataFrame(st.session_state.transacciones_cerradas)
@@ -345,7 +389,7 @@ elif st.session_state.rol_actual == "⚙️ Administrador":
         else:
             st.info("Sin datos contables disponibles.")
 
-    with pestanas_adm[4]:
+    with pestanas_adm[5]:
         st.subheader("💬 Gestión de Mensajería y Agradecimientos")
         tel_prod_adm = st.text_input("Teléfono del Productor:")
         nom_prod_adm = st.text_input("Nombre:")
@@ -355,7 +399,7 @@ elif st.session_state.rol_actual == "⚙️ Administrador":
                 url = f"https://wa.me/58{tel_prod_adm[-10:]}?text={urllib.parse.quote(msg)}"
                 st.markdown(f"[💬 Enviar mensaje]({url})", unsafe_allow_html=True)
 
-    with pestanas_adm[5]:
+    with pestanas_adm[6]:
         st.subheader("📄 Generador de Notas de Entrega PDF")
         if not st.session_state.transacciones_cerradas:
             st.info("No hay transacciones para generar PDF.")
