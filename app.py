@@ -156,7 +156,7 @@ if st.session_state.rol_actual == "🚜 Productor":
     pestanas_prod = st.tabs([
         "🛒 Lanzar Subasta", 
         "📊 Mis Pujas y Ofertas", 
-        "💳 Pagar Insumo (Zinli / Wally)", 
+        "💳 Pasarela de Pago (Móvil / Zinli / Wally)", 
         "📈 Tendencias",
         "🚜 Requerimientos"
     ])
@@ -214,8 +214,8 @@ if st.session_state.rol_actual == "🚜 Productor":
                                     st.success("¡Oferta adjudicada! Vaya a la pestaña de pagos.")
 
     with pestanas_prod[2]:
-        st.subheader("💳 Pasarela de Pago con Tarjetas Virtuales (Zinli / Wally)")
-        st.write("El precio definitivo incluye automáticamente el **2% de aporte por uso del sistema**.")
+        st.subheader("💳 Pasarela de Pago Integrada (Pago Móvil / Zinli / Wally)")
+        st.write("El precio definitivo incluye automáticamente el **2% de aporte por uso del sistema** centralizado.")
         if not st.session_state.transacciones_cerradas:
             st.info("Sin transacciones pendientes de pago.")
         else:
@@ -229,17 +229,19 @@ if st.session_state.rol_actual == "🚜 Productor":
                 st.write(f"• **Precio Definitivo Total: ${desglose['precio_definitivo']:.2f} USD** (~{monto_ves:,.2f} VES)")
                 
                 with st.form(f"form_pago_{t['id_transaccion']}"):
-                    metodo_pago = st.selectbox("Seleccione Método de Pago:", ["Zinli (Visa)", "Wally"], key=f"mp_{t['id_transaccion']}")
-                    num_tarjeta = st.text_input("Número de Tarjeta (16 dígitos):", max_chars=16, key=f"nt_{t['id_transaccion']}")
-                    c_titular = st.text_input("Nombre del Titular:", key=f"tit_{t['id_transaccion']}")
-                    c_exp = st.text_input("Válido Hasta (MM/AA):", key=f"exp_{t['id_transaccion']}")
-                    c_cvv = st.text_input("CVV:", type="password", max_chars=4, key=f"cvv_{t['id_transaccion']}")
+                    metodo_pago = st.selectbox("Seleccione Método de Pago:", ["Pago Móvil (BDV)", "Zinli (Visa)", "Wally"], key=f"mp_{t['id_transaccion']}")
+                    
+                    if metodo_pago == "Pago Móvil (BDV)":
+                        st.info(f"Datos de Pago Móvil: Banco {EMPRESA_BANCO} | Telf: {EMPRESA_TELEFONO} | RIF: {EMPRESA_RIF}")
+                        ref_pago = st.text_input("Número de Referencia Bancaria:", key=f"ref_{t['id_transaccion']}")
+                    else:
+                        num_tarjeta = st.text_input("Número de Tarjeta (16 dígitos):", max_chars=16, key=f"nt_{t['id_transaccion']}")
+                        c_titular = st.text_input("Nombre del Titular:", key=f"tit_{t['id_transaccion']}")
+                        c_exp = st.text_input("Válido Hasta (MM/AA):", key=f"exp_{t['id_transaccion']}")
+                        c_cvv = st.text_input("CVV:", type="password", max_chars=4, key=f"cvv_{t['id_transaccion']}")
                     
                     if st.form_submit_button("🚀 Procesar Pago Definitivo"):
-                        if num_tarjeta and c_titular and c_exp and c_cvv:
-                            st.success(f"¡Pago procesado exitosamente vía {metodo_pago}! Monto total descontado con 2% incluido: ${desglose['precio_definitivo']:.2f} USD")
-                        else:
-                            st.error("Por favor complete todos los datos de su tarjeta.")
+                        st.success(f"¡Pago procesado exitosamente vía {metodo_pago}! Monto total registrado con 2% incluido: ${desglose['precio_definitivo']:.2f} USD")
 
     with pestanas_prod[3]:
         st.subheader("📈 Tendencias de Precios Regionales")
@@ -257,7 +259,7 @@ elif st.session_state.rol_actual == "🏪 Agrotienda":
         "📦 Mi Inventario", 
         "📝 Afiliación Mercantil", 
         "📈 Tendencias",
-        "💳 Pasarela de Cobro"
+        "💳 Pasarela de Cobro Multi-canal"
     ])
     
     with pestanas_tienda[0]:
@@ -292,9 +294,11 @@ elif st.session_state.rol_actual == "🏪 Agrotienda":
         st.line_chart(pd.DataFrame({"Semana": ["Sem 1", "Sem 2", "Sem 3", "Actual"], "USD": [45, 44, 43, 42]}).set_index("Semana"))
 
     with pestanas_tienda[4]:
-        st.subheader("📲 Configuración de Cobro y Pasarela")
-        st.info(f"Banco: {EMPRESA_BANCO} | Teléfono: {EMPRESA_TELEFONO} | RIF: {EMPRESA_RIF}")
-        st.write("Las agrotiendas operan bajo el modelo donde el precio definitivo contempla automáticamente el **2% de aporte por el uso del sistema** centralizado.")
+        st.subheader("📲 Configuración de Cobro y Pasarela Multi-canal")
+        st.write("Su agrotienda recibe y procesa pagos bajo los tres canales oficiales integrados al sistema centralizado:")
+        st.info(f"🏦 **1. Pago Móvil (BDV):** {EMPRESA_BANCO} | Telf: {EMPRESA_TELEFONO} | RIF: {EMPRESA_RIF}")
+        st.success("💳 **2. Tarjetas Virtuales Internacionales (Zinli / Wally):** Habilitadas automáticamente para cobros en divisas mediante la plataforma.")
+        st.write("Cada precio definitivo procesado contempla de forma transparente el **2% de aporte por el uso del sistema** retenido por la plataforma central.")
 
 # --- VISTA 3: EXCLUSIVA PARA EL ADMINISTRADOR (ACCESO TOTAL) ---
 elif st.session_state.rol_actual == "⚙️ Administrador":
