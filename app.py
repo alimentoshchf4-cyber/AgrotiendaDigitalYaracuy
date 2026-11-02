@@ -19,6 +19,7 @@ EMPRESA_NOMBRE = "COMPAÑÍA HCHF4 C.A."
 EMPRESA_RIF = "J-404509216"
 EMPRESA_BANCO = "Banco de Venezuela (0102)"
 EMPRESA_TELEFONO = "04120582064"
+COMISION_SISTEMA = 0.02  # 2% de aporte por el uso del sistema
 
 # ----------------------------------------------------
 # 2. INICIALIZACIÓN DE ESTADOS GLOBALES
@@ -52,6 +53,16 @@ if "transacciones_cerradas" not in st.session_state:
     st.session_state.transacciones_cerradas = []
 if "pagos_agrotiendas" not in st.session_state:
     st.session_state.pagos_agrotiendas = []
+
+def calcular_precio_con_comision(precio_base):
+    """Calcula el precio definitivo sumando el 2% de aporte por uso del sistema."""
+    aporte = precio_base * COMISION_SISTEMA
+    precio_final = precio_base + aporte
+    return {
+        "precio_base": round(precio_base, 2),
+        "aporte_sistema": round(aporte, 2),
+        "precio_definitivo": round(precio_final, 2)
+    }
 
 # ----------------------------------------------------
 # 3. ENCABEZADO CORPORATIVO CON DOBLE LOGOTIPO
@@ -145,7 +156,7 @@ if st.session_state.rol_actual == "🚜 Productor":
     pestanas_prod = st.tabs([
         "🛒 Lanzar Subasta", 
         "📊 Mis Pujas y Ofertas", 
-        "💳 Pagar Insumo", 
+        "💳 Pagar Insumo (Zinli / Wally)", 
         "📈 Tendencias",
         "🚜 Requerimientos"
     ])
@@ -203,19 +214,32 @@ if st.session_state.rol_actual == "🚜 Productor":
                                     st.success("¡Oferta adjudicada! Vaya a la pestaña de pagos.")
 
     with pestanas_prod[2]:
-        st.subheader("💳 Pasarela de Pago de Insumo Adquirido")
+        st.subheader("💳 Pasarela de Pago con Tarjetas Virtuales (Zinli / Wally)")
+        st.write("El precio definitivo incluye automáticamente el **2% de aporte por uso del sistema**.")
         if not st.session_state.transacciones_cerradas:
             st.info("Sin transacciones pendientes de pago.")
         else:
             for t in st.session_state.transacciones_cerradas:
-                monto_ves = t['precio'] * st.session_state.tasa_bcv
-                st.write(f"📦 **{t['insumo']}** | Tienda: {t['tienda']} | **${t['precio']:.2f} USD** (~{monto_ves:,.2f} VES)")
-                ref = st.text_input("Número de Referencia de Pago Móvil:", key=f"ref_p_{t['id_transaccion']}")
-                if st.button("Confirmar Pago", key=f"btn_p_{t['id_transaccion']}"):
-                    if ref:
-                        st.success("¡Pago reportado a la agrotienda con éxito!")
-                    else:
-                        st.error("Ingrese el número de referencia.")
+                desglose = calcular_precio_con_comision(t['precio'])
+                monto_ves = desglose['precio_definitivo'] * st.session_state.tasa_bcv
+                
+                st.markdown(f"--- \n📦 **{t['insumo']}** | Tienda: {t['tienda']}")
+                st.write(f"• Monto Base: ${desglose['precio_base']:.2f} USD")
+                st.write(f"• Aporte Sistema (2%): ${desglose['aporte_sistema']:.2f} USD")
+                st.write(f"• **Precio Definitivo Total: ${desglose['precio_definitivo']:.2f} USD** (~{monto_ves:,.2f} VES)")
+                
+                with st.form(f"form_pago_{t['id_transaccion']}"):
+                    metodo_pago = st.selectbox("Seleccione Método de Pago:", ["Zinli (Visa)", "Wally"], key=f"mp_{t['id_transaccion']}")
+                    num_tarjeta = st.text_input("Número de Tarjeta (16 dígitos):", max_chars=16, key=f"nt_{t['id_transaccion']}")
+                    c_titular = st.text_input("Nombre del Titular:", key=f"tit_{t['id_transaccion']}")
+                    c_exp = st.text_input("Válido Hasta (MM/AA):", key=f"exp_{t['id_transaccion']}")
+                    c_cvv = st.text_input("CVV:", type="password", max_chars=4, key=f"cvv_{t['id_transaccion']}")
+                    
+                    if st.form_submit_button("🚀 Procesar Pago Definitivo"):
+                        if num_tarjeta and c_titular and c_exp and c_cvv:
+                            st.success(f"¡Pago procesado exitosamente vía {metodo_pago}! Monto total descontado con 2% incluido: ${desglose['precio_definitivo']:.2f} USD")
+                        else:
+                            st.error("Por favor complete todos los datos de su tarjeta.")
 
     with pestanas_prod[3]:
         st.subheader("📈 Tendencias de Precios Regionales")
@@ -233,7 +257,7 @@ elif st.session_state.rol_actual == "🏪 Agrotienda":
         "📦 Mi Inventario", 
         "📝 Afiliación Mercantil", 
         "📈 Tendencias",
-        "💳 Pago Móvil BDV"
+        "💳 Pasarela de Cobro"
     ])
     
     with pestanas_tienda[0]:
@@ -245,13 +269,13 @@ elif st.session_state.rol_actual == "🏪 Agrotienda":
                 st.markdown(f"**Zona:** [{p['estado']}] - **Necesita:** {p['insumo']} ({p['cantidad']})")
                 with st.form(f"cot_{p['id']}"):
                     t_nom = st.text_input("Nombre de su Agrotienda:")
-                    precio = st.number_input("Precio Total Ofertado (USD $):", min_value=0.0, format="%.2f")
+                    precio_base_cot = st.number_input("Precio Base Ofertado (USD $):", min_value=0.0, format="%.2f")
                     whatsapp = st.text_input("WhatsApp Comercial:")
                     if st.form_submit_button("Enviar Oferta"):
-                        if t_nom and precio > 0:
+                        if t_nom and precio_base_cot > 0:
                             st.session_state.ofertas.append({
                                 "pedido_id": p['id'], "tienda": t_nom, "estado_tienda": p['estado'],
-                                "precio": precio, "tiempo": "Inmediato", "telefono_tienda": whatsapp
+                                "precio": precio_base_cot, "tiempo": "Inmediato", "telefono_tienda": whatsapp
                             })
                             st.success("¡Puja enviada correctamente!")
 
@@ -268,8 +292,9 @@ elif st.session_state.rol_actual == "🏪 Agrotienda":
         st.line_chart(pd.DataFrame({"Semana": ["Sem 1", "Sem 2", "Sem 3", "Actual"], "USD": [45, 44, 43, 42]}).set_index("Semana"))
 
     with pestanas_tienda[4]:
-        st.subheader("📲 Pasarela de Pago Móvil")
+        st.subheader("📲 Configuración de Cobro y Pasarela")
         st.info(f"Banco: {EMPRESA_BANCO} | Teléfono: {EMPRESA_TELEFONO} | RIF: {EMPRESA_RIF}")
+        st.write("Las agrotiendas operan bajo el modelo donde el precio definitivo contempla automáticamente el **2% de aporte por el uso del sistema** centralizado.")
 
 # --- VISTA 3: EXCLUSIVA PARA EL ADMINISTRADOR (ACCESO TOTAL) ---
 elif st.session_state.rol_actual == "⚙️ Administrador":
@@ -296,8 +321,16 @@ elif st.session_state.rol_actual == "⚙️ Administrador":
         st.write(st.session_state.transacciones_cerradas if st.session_state.transacciones_cerradas else "Sin transacciones cerradas.")
 
     with pestanas_adm[2]:
-        st.subheader("💸 Liquidación de Pagos a Agrotiendas")
-        st.write("Módulo de transferencia neta y comisiones de corretaje operativo.")
+        st.subheader("💸 Liquidación de Pagos y Aporte del Sistema (2%)")
+        if not st.session_state.transacciones_cerradas:
+            st.info("No hay transacciones registradas para calcular comisiones.")
+        else:
+            total_recaudado_sistema = 0.0
+            for t in st.session_state.transacciones_cerradas:
+                des = calcular_precio_con_comision(t['precio'])
+                total_recaudado_sistema += des['aporte_sistema']
+                st.write(f"• Transacción #{t['id_transaccion']} | Aliado: {t['tienda']} | Base: ${des['precio_base']} | **Aporte Sistema (2%):** ${des['aporte_sistema']} | Definitivo: ${des['precio_definitivo']}")
+            st.metric("Total Acumulado por Aporte del Sistema (2%)", f"${total_recaudado_sistema:.2f} USD")
 
     with pestanas_adm[3]:
         st.subheader("📊 Reportes Contables")
@@ -332,7 +365,8 @@ elif st.session_state.rol_actual == "⚙️ Administrador":
                     pdf = PDF()
                     pdf.add_page()
                     pdf.set_font("Arial", "", 10)
-                    pdf.cell(0, 8, f"Transaccion #{t['id_transaccion']} - {t['insumo']} (${t['precio']} USD)", 0, 1)
+                    des_pdf = calcular_precio_con_comision(t['precio'])
+                    pdf.cell(0, 8, f"Transaccion #{t['id_transaccion']} - {t['insumo']} (Definitivo: ${des_pdf['precio_definitivo']} USD)", 0, 1)
                     fn = f"Nota_{t['id_transaccion']}.pdf"
                     pdf.output(fn)
                     with open(fn, "rb") as f:
