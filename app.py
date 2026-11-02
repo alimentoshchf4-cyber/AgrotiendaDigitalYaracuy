@@ -59,7 +59,7 @@ if "pagos_agrotiendas" not in st.session_state:
 col_logo1, col_titulo, col_logo2 = st.columns([1, 2, 1])
 
 logo_izq = "logoshchf4.png"
-logo_der = "logoagrodigitalvenezueladeinitivo.png"
+logo_der = "logoagrodigitalvenezueladefinitivo.png"
 
 with col_logo1:
     if path.exists(logo_izq):
