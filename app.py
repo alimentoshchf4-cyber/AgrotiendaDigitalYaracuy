@@ -70,7 +70,7 @@ def calcular_precio_con_comision(precio_base):
 col_logo1, col_titulo, col_logo2 = st.columns([1, 2, 1])
 
 logo_izq = "logoshchf4.png"
-logo_der = "logoagrodigitalvenezueladeinitivo.png"
+logo_der = "logo agrodigitalvenezueladeinitivo.png"
 
 with col_logo1:
     if path.exists(logo_izq):
